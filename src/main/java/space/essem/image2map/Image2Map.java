@@ -1,6 +1,8 @@
 package space.essem.image2map;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import org.lwjgl.system.CallbackI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.essem.image2map.config.Image2MapConfig;
@@ -44,13 +46,17 @@ public class Image2Map implements ModInitializer {
 
     public static Logger LOGGER = LoggerFactory.getLogger(Image2Map.class);
 
+    private IPermissionsEvaluator permissionsEvaluator;
+
     @Override
     public void onInitialize() {
         LOGGER.info("Loading Image2Map...");
 
+        this.permissionsEvaluator = selectPermissionEvaluator();
+
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(CommandManager.literal("mapcreate")
-                    .requires(source -> source.hasPermissionLevel(CONFIG.minPermLevel))
+                    .requires(source -> permissionsEvaluator.hasPermission(source))
                     .then(CommandManager.argument("mode", StringArgumentType.word()).suggests(new DitherModeSuggestionProvider())
                             .then(CommandManager.argument("path", StringArgumentType.greedyString())
                                     .executes(this::createMap))));
@@ -145,11 +151,12 @@ public class Image2Map implements ModInitializer {
 
     private static IPermissionsEvaluator selectPermissionEvaluator() {
 
-        try {
-            Class.forName("LuckPermsProvider");
+        FabricLoader loader = FabricLoader.getInstance();
+
+        if (loader.getModContainer("luckperms").isPresent()) {
             LOGGER.info("Selected 'Luck Perms' as the permissions provider!");
             return new LuckPermsPermissionEvaluator();
-        } catch (ClassNotFoundException ignored) {}
+        }
 
         LOGGER.info("Selected the default permissions provider.");
         return new DefaultPermissionEvaluator();
