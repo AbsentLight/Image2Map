@@ -49,7 +49,7 @@ public class MapRenderer {
         nbt.putByte("scale", (byte) 3);
         MapState state = MapState.fromNbt(nbt);
         world.putMapState(FilledMapItem.getMapName(id), state);
-        stack.getOrCreateTag().putInt("map", id);
+        stack.getOrCreateNbt().putInt("map", id);
 
         Image resizedImage = image.getScaledInstance(128, 128, Image.SCALE_DEFAULT);
         BufferedImage resized = convertToBufferedImage(resizedImage);

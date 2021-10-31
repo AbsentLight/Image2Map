@@ -1,7 +1,12 @@
 package space.essem.image2map;
 
 import net.fabricmc.api.ModInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import space.essem.image2map.config.Image2MapConfig;
+import space.essem.image2map.permission.DefaultPermissionEvaluator;
+import space.essem.image2map.permission.IPermissionsEvaluator;
+import space.essem.image2map.permission.LuckPermsPermissionEvaluator;
 import space.essem.image2map.renderer.MapRenderer;
 
 import java.io.File;
@@ -33,12 +38,15 @@ import net.minecraft.util.math.Vec3d;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 
 public class Image2Map implements ModInitializer {
+
     public static Image2MapConfig CONFIG = AutoConfig.register(Image2MapConfig.class, GsonConfigSerializer::new)
             .getConfig();
 
+    public static Logger LOGGER = LoggerFactory.getLogger(Image2Map.class);
+
     @Override
     public void onInitialize() {
-        System.out.println("Loading Image2Map...");
+        LOGGER.info("Loading Image2Map...");
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(CommandManager.literal("mapcreate")
@@ -133,5 +141,17 @@ public class Image2Map implements ModInitializer {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private static IPermissionsEvaluator selectPermissionEvaluator() {
+
+        try {
+            Class.forName("LuckPermsProvider");
+            LOGGER.info("Selected 'Luck Perms' as the permissions provider!");
+            return new LuckPermsPermissionEvaluator();
+        } catch (ClassNotFoundException ignored) {}
+
+        LOGGER.info("Selected the default permissions provider.");
+        return new DefaultPermissionEvaluator();
     }
 }
