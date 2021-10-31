@@ -2,7 +2,6 @@ package space.essem.image2map;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import org.lwjgl.system.CallbackI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.essem.image2map.config.Image2MapConfig;
